@@ -1,6 +1,6 @@
-site_name: Snowflake & Data Engineering — Doc Personnelle
-site_description: Notes et documentation personnelle sur Snowflake et le Data Engineering
-site_author: Moi
+site_name: SnowPro Certification — Doc Personnelle
+site_description: Préparation SnowPro Core & Data Engineer
+site_author: Said-ABOULOUAFA
 site_url: https://Said-ABOULOUAFA.github.io/Snowflake/
 
 theme:
@@ -30,7 +30,7 @@ theme:
   icon:
     repo: fontawesome/brands/github
 
-repo_name: repo_name: Said-ABOULOUAFA/Snowflake
+repo_name: Said-ABOULOUAFA/Snowflake
 repo_url: https://github.com/Said-ABOULOUAFA/Snowflake
 
 plugins:
@@ -48,31 +48,61 @@ markdown_extensions:
       alternate_style: true
   - tables
   - attr_list
-  - md_in_html
 
 nav:
   - Accueil: index.md
-  - Prise en main:
-      - Installation & Connexion: getting-started/connexion.md
-      - Snowsight (UI): getting-started/snowsight.md
-  - Architecture:
-      - Concepts clés: architecture/concepts-cles.md
-      - Stockage (Tables): architecture/stockage.md
-      - Entrepôts virtuels: architecture/entrepots-virtuels.md
-      - Services Cloud: architecture/services-cloud.md
-  - Data Engineering:
-      - Chargement de données: data-engineering/chargement.md
-      - Snowpipe & Streaming: data-engineering/snowpipe.md
-      - Transformations (dbt, Snowpark): data-engineering/transformations.md
-      - Flux & Tâches: data-engineering/flux-taches.md
-  - Analytique & SQL:
-      - Requêtes avancées: analytics/sql-avance.md
-      - Fonctions de fenêtre: analytics/window-functions.md
-      - Optimisation des requêtes: analytics/optimisation.md
-  - AI & ML:
-      - Snowflake Cortex: ai-ml/cortex.md
-      - Snowflake ML: ai-ml/snowflake-ml.md
-  - Bonnes pratiques:
-      - Sécurité & Accès: best-practices/securite.md
-      - Coûts & Performance: best-practices/couts-performance.md
-      - Checklist projet: best-practices/checklist.md
+
+  - "🎯 SnowPro Core":
+      - Vue d'ensemble: core/index.md
+      - "1 · Architecture":
+          - Concepts clés & couches: core/architecture/concepts-cles.md
+          - Types de tables: core/architecture/types-tables.md
+          - Entrepôts virtuels: core/architecture/entrepots-virtuels.md
+          - Editions Snowflake: core/architecture/editions.md
+      - "2 · Sécurité & Accès":
+          - Rôles & privilèges: core/securite/roles-privileges.md
+          - Authentification & réseau: core/securite/authentification.md
+          - Chiffrement & masquage: core/securite/chiffrement-masquage.md
+      - "3 · Performance":
+          - Micro-partitions & clustering: core/performance/micro-partitions.md
+          - Cache & optimisation requêtes: core/performance/cache-optimisation.md
+          - Résultat & métadonnées cache: core/performance/result-cache.md
+      - "4 · Chargement & Export":
+          - Stages & file formats: core/chargement/stages-formats.md
+          - COPY INTO & Snowpipe: core/chargement/copy-snowpipe.md
+          - Export (COPY INTO location): core/chargement/export.md
+      - "5 · Transformation":
+          - Streams & Tasks: core/transformation/streams-tasks.md
+          - Tables dynamiques & dbt: core/transformation/dynamic-tables-dbt.md
+          - Snowpark: core/transformation/snowpark.md
+      - "6 · Protection & Partage":
+          - Time Travel & Fail-safe: core/protection/time-travel-failsafe.md
+          - Clonage: core/protection/clonage.md
+          - Data Sharing & Marketplace: core/protection/sharing-marketplace.md
+
+  - "⚙️ SnowPro Data Engineer":
+      - Vue d'ensemble: engineer/index.md
+      - "1 · Data Movement (28%)":
+          - Ingestion batch & streaming: engineer/data-movement/ingestion.md
+          - Connecteurs & intégrations: engineer/data-movement/connecteurs.md
+          - Troubleshooting ingestion: engineer/data-movement/troubleshooting.md
+      - "2 · Data Transformation (30%)":
+          - Pipelines avancés: engineer/data-transformation/pipelines.md
+          - Snowpark Python/Java/Scala: engineer/data-transformation/snowpark-avance.md
+          - Procédures stockées & UDFs: engineer/data-transformation/procedures-udfs.md
+      - "3 · Performance (22%)":
+          - Clustering & pruning avancé: engineer/performance/clustering-avance.md
+          - Query Profile & diagnostics: engineer/performance/query-profile.md
+          - Warehouse sizing & scaling: engineer/performance/warehouse-sizing.md
+      - "4 · Storage & Protection (10%)":
+          - CDP, Time Travel, Fail-safe: engineer/storage/cdp.md
+          - Réplication inter-régions: engineer/storage/replication.md
+      - "5 · Security (10%)":
+          - Dynamic Data Masking: engineer/security/masking.md
+          - Row Access Policies: engineer/security/row-access.md
+          - Network policies & OAuth: engineer/security/network-oauth.md
+
+  - "📝 Fiches révision":
+      - Cheat sheet Core: revision/cheatsheet-core.md
+      - Cheat sheet Data Engineer: revision/cheatsheet-engineer.md
+      - Questions fréquentes: revision/faq.md
