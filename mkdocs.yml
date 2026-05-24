@@ -1,0 +1,78 @@
+site_name: Snowflake & Data Engineering — Doc Personnelle
+site_description: Notes et documentation personnelle sur Snowflake et le Data Engineering
+site_author: Moi
+site_url: https://Said-ABOULOUAFA.github.io/Snowflake/
+
+theme:
+  name: material
+  language: fr
+  palette:
+    - scheme: default
+      primary: blue
+      accent: cyan
+      toggle:
+        icon: material/weather-night
+        name: Mode sombre
+    - scheme: slate
+      primary: blue
+      accent: cyan
+      toggle:
+        icon: material/weather-sunny
+        name: Mode clair
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+  icon:
+    repo: fontawesome/brands/github
+
+repo_name: repo_name: Said-ABOULOUAFA/Snowflake
+repo_url: https://github.com/Said-ABOULOUAFA/Snowflake
+
+plugins:
+  - search:
+      lang: fr
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - attr_list
+  - md_in_html
+
+nav:
+  - Accueil: index.md
+  - Prise en main:
+      - Installation & Connexion: getting-started/connexion.md
+      - Snowsight (UI): getting-started/snowsight.md
+  - Architecture:
+      - Concepts clés: architecture/concepts-cles.md
+      - Stockage (Tables): architecture/stockage.md
+      - Entrepôts virtuels: architecture/entrepots-virtuels.md
+      - Services Cloud: architecture/services-cloud.md
+  - Data Engineering:
+      - Chargement de données: data-engineering/chargement.md
+      - Snowpipe & Streaming: data-engineering/snowpipe.md
+      - Transformations (dbt, Snowpark): data-engineering/transformations.md
+      - Flux & Tâches: data-engineering/flux-taches.md
+  - Analytique & SQL:
+      - Requêtes avancées: analytics/sql-avance.md
+      - Fonctions de fenêtre: analytics/window-functions.md
+      - Optimisation des requêtes: analytics/optimisation.md
+  - AI & ML:
+      - Snowflake Cortex: ai-ml/cortex.md
+      - Snowflake ML: ai-ml/snowflake-ml.md
+  - Bonnes pratiques:
+      - Sécurité & Accès: best-practices/securite.md
+      - Coûts & Performance: best-practices/couts-performance.md
+      - Checklist projet: best-practices/checklist.md
