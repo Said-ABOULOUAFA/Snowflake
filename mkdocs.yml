@@ -1,5 +1,5 @@
-site_name: SnowPro Certification — Doc Personnelle
-site_description: Préparation SnowPro Core COF-C03 & Data Engineer DEA-C02
+site_name: SnowPro Certifications — Documentation Officielle
+site_description: COF-C03 · DEA-C02 · SPS-C01 (Snowpark)
 site_author: Said-ABOULOUAFA
 site_url: https://Said-ABOULOUAFA.github.io/Snowflake/
 
@@ -27,6 +27,7 @@ theme:
     - search.highlight
     - search.suggest
     - content.code.copy
+    - toc.integrate
   icon:
     repo: fontawesome/brands/github
 
@@ -48,69 +49,95 @@ markdown_extensions:
       alternate_style: true
   - tables
   - attr_list
+  - toc:
+      permalink: true
 
 nav:
   - Accueil: index.md
 
-  - "🎯 SnowPro Core COF-C03":
-      - Vue d'ensemble: core/index.md
-      - "1 · Architecture":
-          - Concepts clés & couches: core/architecture/concepts-cles.md
-          - Types de tables: core/architecture/types-tables.md
-          - Types de vues: core/architecture/vues.md
-          - Entrepôts virtuels: core/architecture/entrepots-virtuels.md
-          - Éditions Snowflake: core/architecture/editions.md
-          - Cortex AI, Notebooks & Streamlit: core/architecture/cortex-ai.md
-      - "2 · Account Management & Gouvernance":
-          - Rôles & privilèges (RBAC): core/securite/roles-privileges.md
-          - Authentification & réseau: core/securite/authentification.md
-          - Chiffrement & masquage: core/securite/chiffrement-masquage.md
-          - Resource Monitors & Trust Center: core/securite/account-management.md
-      - "3 · Performance":
-          - Micro-partitions & clustering: core/performance/micro-partitions.md
-          - Cache (3 niveaux) & QAS: core/performance/cache-avance.md
-          - Query Profile & optimisation: core/performance/cache-optimisation.md
-      - "4 · Chargement & Export":
-          - Stages & file formats: core/chargement/stages-formats.md
-          - COPY INTO & Snowpipe: core/chargement/copy-snowpipe.md
-          - Export & unload: core/chargement/export.md
-      - "5 · Transformation":
-          - Streams & Tasks: core/transformation/streams-tasks.md
-          - Tables dynamiques & dbt: core/transformation/dynamic-tables-dbt.md
-          - Snowpark: core/transformation/snowpark.md
-      - "6 · Data Collaboration":
-          - Time Travel & Fail-safe: core/protection/time-travel-failsafe.md
-          - Clonage (Zero-Copy): core/protection/clonage.md
-          - Data Sharing & Marketplace: core/protection/sharing-marketplace.md
-          - Reader Accounts & Native Apps: core/protection/reader-accounts-native-apps.md
+  - "🎯 COF-C03 — SnowPro Core":
+      - Vue d'ensemble & Prérequis: core/index.md
+      - "D1 — Architecture (31%)":
+          - "1.1 Architecture Snowflake": core/d1-architecture/1-1-architecture.md
+          - "1.2 Interfaces & Outils": core/d1-architecture/1-2-interfaces.md
+          - "1.3 Objets Snowflake": core/d1-architecture/1-3-objects.md
+          - "1.4 Entrepôts Virtuels": core/d1-architecture/1-4-warehouses.md
+          - "1.5 Stockage & Types de tables/vues": core/d1-architecture/1-5-storage.md
+          - "1.6 AI/ML & Développement": core/d1-architecture/1-6-ai-ml.md
+      - "D2 — Gouvernance (20%)":
+          - "2.1 Modèle de sécurité & RBAC": core/d2-governance/2-1-security.md
+          - "2.2 Data Governance": core/d2-governance/2-2-data-governance.md
+          - "2.3 Monitoring & Coûts": core/d2-governance/2-3-monitoring.md
+      - "D3 — Chargement (18%)":
+          - "3.1 Chargement & Export": core/d3-loading/3-1-loading.md
+          - "3.2 Ingestion automatisée": core/d3-loading/3-2-automated.md
+          - "3.3 Connecteurs & Intégrations": core/d3-loading/3-3-connectors.md
+      - "D4 — Performance (21%)":
+          - "4.1 Évaluer les performances": core/d4-performance/4-1-evaluate.md
+          - "4.2 Optimiser les requêtes": core/d4-performance/4-2-optimize.md
+          - "4.3 Cache (3 niveaux)": core/d4-performance/4-3-caching.md
+          - "4.4 Transformation des données": core/d4-performance/4-4-transformation.md
+      - "D5 — Collaboration (10%)":
+          - "5.1 Protection des données": core/d5-collaboration/5-1-protection.md
+          - "5.2 Data Sharing": core/d5-collaboration/5-2-sharing.md
+          - "5.3 Marketplace & Listings": core/d5-collaboration/5-3-marketplace.md
 
-  - "⚙️ SnowPro Data Engineer DEA-C02":
-      - Vue d'ensemble: engineer/index.md
-      - "1 · Data Movement (28%)":
-          - Ingestion batch & streaming: engineer/data-movement/ingestion.md
-          - INFER_SCHEMA, Tables externes & Openflow: engineer/data-movement/infer-schema-external.md
-          - Connecteurs & intégrations: engineer/data-movement/connecteurs.md
-          - Troubleshooting ingestion: engineer/data-movement/troubleshooting.md
-      - "2 · Data Transformation (30%)":
-          - Pipelines, MERGE & fonctions fenêtre: engineer/data-transformation/pipelines.md
-          - Snowpark Python avancé & UDFs/UDAFs: engineer/data-transformation/snowpark-avance.md
-          - Cortex LLM, dbt & Git integration: engineer/data-transformation/cortex-dbt-git.md
-          - Procédures stockées & transactions: engineer/data-transformation/procedures-udfs.md
-      - "3 · Performance Optimization (22%)":
-          - Clustering & pruning avancé: engineer/performance/clustering-avance.md
-          - Query Profile & diagnostics: engineer/performance/query-profile.md
-          - Monitoring pipelines & alertes: engineer/performance/monitoring-avance.md
-      - "4 · Storage & Protection (10%)":
-          - CDP, Time Travel, Fail-safe: engineer/storage/cdp.md
-          - Réplication inter-régions: engineer/storage/replication.md
-      - "5 · Data Governance (10%)":
-          - Tagging, classification, lineage: engineer/data-governance/gouvernance.md
-      - "6 · Security":
-          - Dynamic Data Masking: engineer/security/masking.md
-          - Row Access & Projection Policies: engineer/security/row-access.md
-          - Network policies & OAuth: engineer/security/network-oauth.md
+  - "⚙️ DEA-C02 — Data Engineer":
+      - Vue d'ensemble & Prérequis: engineer/index.md
+      - "D1 — Data Movement (28%)":
+          - "1.1 Charger des données": engineer/d1-movement/1-1-load.md
+          - "1.2 Formats & Stages": engineer/d1-movement/1-2-formats-stages.md
+          - "1.3 Troubleshooting ingestion": engineer/d1-movement/1-3-troubleshoot.md
+          - "1.4 Pipelines continus": engineer/d1-movement/1-4-pipelines.md
+          - "1.5 Connecteurs": engineer/d1-movement/1-5-connectors.md
+          - "1.6 Data Sharing & Streamlit": engineer/d1-movement/1-6-sharing.md
+          - "1.7 Types de tables & Schema Evolution": engineer/d1-movement/1-7-tables.md
+      - "D2 — Performance (19%)":
+          - "2.1 Troubleshoot requêtes lentes": engineer/d2-performance/2-1-troubleshoot.md
+          - "2.2 Configurer les performances": engineer/d2-performance/2-2-optimize.md
+          - "2.3 Monitoring pipelines": engineer/d2-performance/2-3-monitor.md
+      - "D3 — Storage & Protection (14%)":
+          - "3.1 Data Recovery (Time Travel, Fail-safe, Réplication)": engineer/d3-storage/3-1-recovery.md
+          - "3.2 Micro-partitions & Clustering": engineer/d3-storage/3-2-clustering.md
+          - "3.3 Time Travel & Clonage": engineer/d3-storage/3-3-clone.md
+      - "D4 — Data Governance (14%)":
+          - "4.1 Monitoring des données": engineer/d4-governance/4-1-monitor.md
+          - "4.2 Protection & Politiques": engineer/d4-governance/4-2-protection.md
+      - "D5 — Data Transformation (25%)":
+          - "5.1 UDFs (SQL, Python, JS, UDTFs, UDAFs)": engineer/d5-transformation/5-1-udfs.md
+          - "5.2 External Functions": engineer/d5-transformation/5-2-external.md
+          - "5.3 Procédures stockées & Transactions": engineer/d5-transformation/5-3-procedures.md
+          - "5.4 Données Semi-structurées": engineer/d5-transformation/5-4-semi-structured.md
+          - "5.5 Données Non-structurées & Cortex": engineer/d5-transformation/5-5-unstructured.md
+          - "5.6 Dev Workflows (Git, dbt, Notebooks)": engineer/d5-transformation/5-6-dev-workflows.md
+          - "5.7 Snowpark DataFrames": engineer/d5-transformation/5-7-snowpark.md
+
+  - "🐍 SPS-C01 — Snowpark":
+      - Vue d'ensemble & Prérequis: snowpark/index.md
+      - "D1 — Concepts Snowpark (15%)":
+          - "1.1 Architecture Snowpark": snowpark/d1-concepts/1-1-architecture.md
+          - "1.2 Installation & Setup": snowpark/d1-concepts/1-2-setup.md
+      - "D2 — API Python (30%)":
+          - "2.1 Sessions & Authentification": snowpark/d2-api/2-1-sessions.md
+          - "2.2 Données non structurées": snowpark/d2-api/2-2-unstructured.md
+          - "2.3 Créer des DataFrames": snowpark/d2-api/2-3-dataframes.md
+          - "2.4 UDFs & UDTFs": snowpark/d2-api/2-4-udfs.md
+          - "2.5 Procédures stockées Snowpark": snowpark/d2-api/2-5-stored-procedures.md
+      - "D3 — Transformations (35%)":
+          - "3.1 Filtrer & Transformer": snowpark/d3-transformations/3-1-filter.md
+          - "3.2 Nettoyer & Enrichir": snowpark/d3-transformations/3-2-clean.md
+          - "3.3 Agrégations & Window": snowpark/d3-transformations/3-3-aggregate.md
+          - "3.4 Semi-structuré dans DataFrames": snowpark/d3-transformations/3-4-semi.md
+          - "3.5 Persister les résultats": snowpark/d3-transformations/3-5-persist.md
+          - "3.6 Opérations DML": snowpark/d3-transformations/3-6-dml.md
+      - "D4 — Performance Snowpark (20%)":
+          - "4.1 Warehouses Snowpark-Optimized": snowpark/d4-performance/4-1-warehouses.md
+          - "4.2 Optimiser les performances": snowpark/d4-performance/4-2-optimize.md
+          - "4.3 Troubleshooting Snowpark": snowpark/d4-performance/4-3-troubleshoot.md
 
   - "📝 Fiches révision":
-      - Cheat sheet Core COF-C03: revision/cheatsheet-core.md
-      - Cheat sheet Data Engineer DEA-C02: revision/cheatsheet-engineer.md
-      - Questions fréquentes (FAQ): revision/faq.md
+      - Cheat Sheet Core COF-C03: revision/cheatsheet-core.md
+      - Cheat Sheet Data Engineer DEA-C02: revision/cheatsheet-engineer.md
+      - Cheat Sheet Snowpark SPS-C01: revision/cheatsheet-snowpark.md
+      - Questions types (officiel): revision/sample-questions.md
+      - FAQ & Pièges d'examen: revision/faq.md

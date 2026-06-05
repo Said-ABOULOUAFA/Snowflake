@@ -1,87 +1,47 @@
-# 📋 Cheat Sheet — SnowPro Data Engineer
+# Cheat Sheet DEA-C02 — Data Engineer
 
-## Domaines & poids
+## Prérequis
+- **COF-C03 actif obligatoire**
+- 2+ ans expérience data engineering
 
-| Domaine | Poids | Focus |
-|---|---|---|
-| Data Transformation | **30%** | Dynamic tables, Snowpark, MERGE, UDFs |
-| Data Movement | **28%** | COPY INTO, Snowpipe, Streaming, Kafka |
-| Performance | **22%** | Query Profile, Clustering, Warehouse sizing |
-| Storage & Protection | 10% | Time Travel, Fail-safe, Réplication |
-| Security | 10% | Masking, Row Access, Network policies |
+## Data Movement (28%)
 
----
-
-## Data Movement — Réponses rapides
-
-| Question | Réponse |
+| Scénario | Solution |
 |---|---|
-| Chargement avec transformation inline ? | **COPY INTO + SELECT** |
-| Tester sans charger ? | `VALIDATION_MODE = 'RETURN_ERRORS'` |
-| Snowpipe serverless ? | **Oui** |
-| Kafka vers Snowflake temps réel ? | **Snowflake Connector for Kafka** (streaming mode) |
-| Diagnostiquer erreurs Snowpipe ? | `VALIDATE_PIPE_LOAD()` |
-| Historique chargements ? | `INFORMATION_SCHEMA.COPY_HISTORY` |
+| Fichiers > 64j à recharger sans dupliquer | `LOAD_UNCERTAIN_FILES = TRUE` |
+| Pipeline Kafka temps réel | Kafka Connector + `SNOWPIPE_STREAMING` |
+| Ingestion serverless auto | Snowpipe + AUTO_INGEST = TRUE |
+| Détecter schéma Parquet | `INFER_SCHEMA()` |
+| Fichiers volumineux | 100-250 MB optimal par fichier |
 
----
+## Performance (19%)
 
-## Data Transformation — Réponses rapides
-
-| Question | Réponse |
+| Signal Query Profile | Solution |
 |---|---|
-| Transformation déclarative auto ? | **Dynamic Tables** |
-| `TARGET_LAG = DOWNSTREAM` ? | Se synchronise avec tables dynamiques en aval |
-| Pattern CDC Snowflake natif ? | **Stream + Task** |
-| Upsert SQL ? | **MERGE INTO** |
-| UDF qui retourne plusieurs lignes ? | **UDTF** (User-Defined Table Function) |
-| Snowpark langages supportés ? | **Python, Java, Scala** |
+| Bytes spilled to disk | Scale UP warehouse |
+| Partitions scanned = 100% | Ajouter clustering key |
+| Queue time élevé | Multi-cluster warehouse |
+| Cloud Services > 10% | Simplifier les requêtes |
 
----
+## Storage (14%)
 
-## Performance — Réponses rapides
+```
+ALTER SCHEMA SALES SET DATA_RETENTION_TIME_IN_DAYS = 10;
+-- Plus économique que ALTER DATABASE ou ALTER ACCOUNT
+-- Car applique uniquement au schéma ciblé
 
-| Question | Réponse |
-|---|---|
-| Requête lente + spillage ? | **Augmenter taille warehouse** |
-| Trop de requêtes en queue ? | **Multi-cluster** (scale out) |
-| Requêtes ponctuelles (equality) ? | **Search Optimization** |
-| Requêtes analytiques (range filter) ? | **Clustering Key** |
-| Vérifier pruning ? | Query Profile → % partitions scanned |
-| Clustering depth idéale ? | **Proche de 1** |
-| Vue pré-calculée et stockée ? | **Materialized View** |
+UNDROP TABLE → libérer le nom avec RENAME d'abord si CREATE OR REPLACE
+```
 
----
+## Questions pièges DEA-C02
 
-## Security — Réponses rapides
-
-| Question | Réponse |
-|---|---|
-| Masquer colonnes selon rôle ? | **Dynamic Data Masking** |
-| Filtrer lignes selon rôle ? | **Row Access Policy** |
-| Masking = édition minimum ? | **Enterprise** |
-| Restreindre par IP ? | **Network Policy** |
-| Connexion sans Internet public ? | **PrivateLink** (Business Critical) |
-
----
-
-## Storage & Protection — Réponses rapides
-
-| Question | Réponse |
-|---|---|
-| Réplication entre régions ? | `ALTER DATABASE ... ENABLE REPLICATION` |
-| Failover base de données ? | `ALTER DATABASE replica PRIMARY` |
-| CDP = ? | Time Travel + Fail-safe |
-| Coût stockage CDP ? | Actif + Time Travel + Fail-safe |
-
----
-
-## Anti-patterns à éviter (pièges exam)
-
-❌ Utiliser `ACCOUNTADMIN` pour les tâches quotidiennes
-❌ Oublier `ALTER TASK ... RESUME` après création
-❌ `SELECT *` sur de grandes tables sans filtre
-❌ Appliquer une fonction sur une colonne filtrée (ex: `WHERE YEAR(date) = 2024`)
-❌ Créer un clone et croire que les GRANTs sont copiés
-❌ Suspendre un warehouse fréquemment pour des requêtes répétitives (perd le cache)
-❌ Confondre Fail-safe (support uniquement) avec Time Travel (utilisateur)
-❌ Croire que Snowpipe utilise ton propre warehouse (serverless)
+```
+❗ Task timeout par défaut = 60 min → USER_TASK_TIMEOUT_MS
+❗ TRY_PARSE_JSON → NULL sur JSON invalide (pas d'erreur)
+❗ COPY INTO dédup = 64 jours
+❗ Dynamic Tables → ALTER DYNAMIC TABLE SUSPEND/RESUME
+❗ Hybrid Tables = PRIMARY KEY + INDEX + verrouillage ligne
+❗ Horizon Catalog = fédérer données externes (Glue, Hive)
+❗ Clean Rooms = partager sans exposer données brutes
+❗ Projection Policies = masquer existence d'une colonne
+```
