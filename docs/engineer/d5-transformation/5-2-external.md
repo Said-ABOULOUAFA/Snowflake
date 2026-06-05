@@ -1,46 +1,30 @@
-# 5.2 — External Functions
+# 5.2 External functions
 
-> **Domaine D5 Data Transformation — 25% du DEA-C02**
+> **Domain 5.0 — Data Transformation (25%)**
 
-## External Functions ⭐
-
-Appeler des services externes (AWS Lambda, Azure Functions) depuis SQL.
+Appelle une **API externe** (AWS Lambda, Azure Functions, GCP) depuis SQL.
 
 ```sql
--- Créer l'API Integration
-CREATE API INTEGRATION api_lambda
+CREATE API INTEGRATION api_scoring
   API_PROVIDER = aws_api_gateway
-  API_AWS_ROLE_ARN = 'arn:aws:iam::123:role/sf-api-role'
+  API_AWS_ROLE_ARN = 'arn:aws:iam::123456789:role/snowflake-role'
   API_ALLOWED_PREFIXES = ('https://abc.execute-api.eu-west-1.amazonaws.com/prod/')
   ENABLED = TRUE;
 
--- Créer la External Function
-CREATE EXTERNAL FUNCTION geocoder(adresse STRING)
-RETURNS VARIANT
-API_INTEGRATION = api_lambda
-AS 'https://abc.execute-api.eu-west-1.amazonaws.com/prod/geocode';
+CREATE EXTERNAL FUNCTION scoring_client(client_id INTEGER)
+  RETURNS VARIANT
+  API_INTEGRATION = api_scoring
+  AS 'https://abc.execute-api.eu-west-1.amazonaws.com/prod/score';
 
--- Utiliser en SQL
-SELECT adresse, geocoder(adresse):latitude::FLOAT AS lat,
-                geocoder(adresse):longitude::FLOAT AS lon
-FROM clients;
+SELECT client_id, scoring_client(client_id) AS score FROM clients LIMIT 100;
 ```
 
-## Secure External Functions ⭐
+!!! warning "Considérations"
+    - Latence réseau plus élevée qu'une UDF native.
+    - Facturation = crédits Snowflake **+** coût de l'API externe.
+    - Idéal pour : modèles ML hébergés ailleurs, tokenisation, enrichissement tiers.
 
-```sql
--- Rendre sécurisée (DDL masqué)
-CREATE SECURE EXTERNAL FUNCTION geocoder_secure(adresse STRING)
-RETURNS VARIANT
-API_INTEGRATION = api_lambda
-AS 'https://abc.execute-api.eu-west-1.amazonaws.com/prod/geocode';
-```
+!!! danger "Piège exam"
+    Une external function nécessite **obligatoirement** une `API INTEGRATION` (objet sécurisé) qui référence le rôle/proxy cloud. Sans elle, impossible de créer la fonction. Pour du code custom *dans* Snowflake, préférer une UDF Python (pas d'appel réseau).
 
-## Limites des External Functions
-
-| Limitation | Valeur |
-|---|---|
-| Timeout | 60 secondes par appel |
-| Taille payload | 6 MB max |
-| Appels simultanés | Limités par AWS API GW |
-| Coût | Crédits SF + coût du service externe |
+📎 *Réf. : `docs.snowflake.com/en/sql-reference/external-functions`*

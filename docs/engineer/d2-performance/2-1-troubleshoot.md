@@ -1,51 +1,40 @@
-# 2.1 — Troubleshoot les requêtes sous-performantes
+# 2.1 Troubleshoot underperforming queries
 
-> **Domaine D2 Performance — 19% du DEA-C02**
+> **Domain 2.0 — Performance Optimization (19%)**
 
-## Identifier les requêtes lentes ⭐
+## Démarche : lire le Query Profile
+
+Le **Query Profile** (Snowsight → Query History → clic sur une requête) est l'outil n°1 pour diagnostiquer une requête lente.
+
+![Query Profile](../../assets/query-profile.svg)
+
+## Indicateurs clés à repérer ⭐
+
+| Indicateur | Signification | Action |
+|---|---|---|
+| **Bytes spilled to local storage** | Mémoire du warehouse insuffisante | Agrandir le warehouse |
+| **Bytes spilled to remote storage** | Spill massif (très coûteux) | Agrandir warehouse + réduire le volume traité |
+| **Partitions scanned ≈ total** | Pas de pruning | Améliorer le clustering / filtres |
+| **Cartesian Join / Exploding Join** | Jointure sans clé | Corriger la condition de jointure |
+| **% Time = Remote Disk I/O** | Lecture disque dominante | Pruning, cache, clustering |
+| **Synchronization** | Skew entre threads | Revoir la distribution |
 
 ```sql
-SELECT query_id, query_text,
-       execution_time/1000        AS sec,
-       bytes_scanned/1e9          AS gb_scanned,
-       partitions_scanned,
-       partitions_total,
-       ROUND(100*partitions_scanned/NULLIF(partitions_total,0),1) AS pct_scan,
-       bytes_spilled_to_local_storage/1e9  AS spill_local_gb,
-       bytes_spilled_to_remote_storage/1e9 AS spill_remote_gb
+-- Statistiques d'exécution détaillées
+SELECT * FROM TABLE(GET_QUERY_OPERATOR_STATS('<query_id>'));
+
+-- Requêtes les plus coûteuses sur 7 jours
+SELECT query_id, query_text, execution_time, bytes_spilled_to_local_storage
 FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY
-WHERE start_time >= DATEADD('day', -7, CURRENT_TIMESTAMP())
-  AND execution_status = 'SUCCESS'
+WHERE start_time > DATEADD('day', -7, CURRENT_TIMESTAMP())
 ORDER BY execution_time DESC LIMIT 20;
 ```
 
-## Télémétrie & Root Cause ⭐
+!!! danger "Piège exam"
+    Le **spilling vers le stockage remote** est le signal le plus grave : il indique que le warehouse manque cruellement de mémoire. La réponse attendue est **augmenter la taille du warehouse**, pas ajouter des clusters (le multi-cluster gère la *concurrence*, pas la taille d'une requête unique).
 
-| Signal Query Profile | Cause racine | Solution |
-|---|---|---|
-| Spill to local disk | Warehouse trop petit | Scale UP |
-| Spill to remote storage | Warehouse beaucoup trop petit | Scale UP significatif |
-| Partitions scanned = 100% | Aucun pruning | Clustering key |
-| Exploding joins | Produit cartésien | Revoir la condition JOIN |
-| Queue time élevé | Trop de concurrence | Multi-cluster |
-| Cloud Services > 10% | Trop de métadonnées | Simplifier les requêtes |
+## Pruning de partitions
 
-## Augmenter l'efficacité ⭐
+Un mauvais **pruning** (partitions scanned proche du total) est la cause la plus fréquente de lenteur sur grosses tables. Vérifier que les filtres portent sur les colonnes de clustering naturel ou définies.
 
-```sql
--- Analyser le plan d'exécution
-SELECT SYSTEM$EXPLAIN_PLAN_JSON($$
-    SELECT r.region, SUM(v.montant)
-    FROM ventes v JOIN regions r ON v.region_id = r.id
-    GROUP BY r.region
-$$);
-
--- Voir les statistiques de clustering
-SELECT SYSTEM$CLUSTERING_INFORMATION('ventes', '(date_vente)');
-
--- Surveillance du queuing
-SELECT warehouse_name, queued_load, running
-FROM SNOWFLAKE.ACCOUNT_USAGE.WAREHOUSE_LOAD_HISTORY
-WHERE start_time >= DATEADD('hour', -1, CURRENT_TIMESTAMP())
-ORDER BY queued_load DESC;
-```
+📎 *Réf. : `docs.snowflake.com/en/user-guide/ui-snowsight-activity`*

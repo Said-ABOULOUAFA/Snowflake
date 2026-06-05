@@ -1,47 +1,40 @@
-# Cheat Sheet DEA-C02 — Data Engineer
+# ⚙️ Cheat Sheet — DEA-C02 (Data Engineer)
 
-## Prérequis
-- **COF-C03 actif obligatoire**
-- 2+ ans expérience data engineering
+> 65 questions · 115 min · score 750/1000 · 375 $ · **prérequis : SnowPro Core**
 
-## Data Movement (28%)
-
-| Scénario | Solution |
+## Poids des domaines
+| Domaine | % |
 |---|---|
-| Fichiers > 64j à recharger sans dupliquer | `LOAD_UNCERTAIN_FILES = TRUE` |
-| Pipeline Kafka temps réel | Kafka Connector + `SNOWPIPE_STREAMING` |
-| Ingestion serverless auto | Snowpipe + AUTO_INGEST = TRUE |
-| Détecter schéma Parquet | `INFER_SCHEMA()` |
-| Fichiers volumineux | 100-250 MB optimal par fichier |
+| 1.0 Data Movement | 28 |
+| 2.0 Performance Optimization | 19 |
+| 3.0 Storage & Data Protection | 14 |
+| 4.0 Data Governance | 14 |
+| 5.0 Data Transformation | 25 |
 
-## Performance (19%)
+## Data Movement
+- `COPY INTO`, `INFER_SCHEMA`, `MATCH_BY_COLUMN_NAME` pour Parquet/JSON.
+- **Snowpipe** (auto, event notifications) vs **Snowpipe Streaming** (faible latence, rowset API).
+- **Streams** (CDC) + **Tasks** (DAG) = pipelines continus.
+- Troubleshoot : `COPY_HISTORY`, `VALIDATE()`, `VALIDATION_MODE`, `SYSTEM$PIPE_STATUS`.
 
-| Signal Query Profile | Solution |
-|---|---|
-| Bytes spilled to disk | Scale UP warehouse |
-| Partitions scanned = 100% | Ajouter clustering key |
-| Queue time élevé | Multi-cluster warehouse |
-| Cloud Services > 10% | Simplifier les requêtes |
+## Performance ⭐
+- **Query Profile** : repérer *spilling remote* (→ agrandir WH), *partitions scanned* (→ pruning/clustering), exploding joins.
+- Multi-cluster = concurrence ; taille = puissance d'une requête.
+- Leviers : Clustering keys, Search Optimization (point lookups), Materialized Views, QAS.
 
-## Storage (14%)
+## Storage & protection
+- Time Travel 0–90 j (Ent.), Fail-safe 7 j (non configurable).
+- **Zero-copy clone** : copy-on-write, coût initial nul.
+- `AT/BEFORE`, `UNDROP`, `SWAP WITH`, réplication/failover (BCDR).
 
-```
-ALTER SCHEMA SALES SET DATA_RETENTION_TIME_IN_DAYS = 10;
--- Plus économique que ALTER DATABASE ou ALTER ACCOUNT
--- Car applique uniquement au schéma ciblé
+## Governance
+- Tags, Data Classification (`SYSTEM$CLASSIFY`), **Access History** (lineage).
+- Masking policy (colonne), Row access policy (ligne), tag-based masking, clean rooms.
 
-UNDROP TABLE → libérer le nom avec RENAME d'abord si CREATE OR REPLACE
-```
-
-## Questions pièges DEA-C02
-
-```
-❗ Task timeout par défaut = 60 min → USER_TASK_TIMEOUT_MS
-❗ TRY_PARSE_JSON → NULL sur JSON invalide (pas d'erreur)
-❗ COPY INTO dédup = 64 jours
-❗ Dynamic Tables → ALTER DYNAMIC TABLE SUSPEND/RESUME
-❗ Hybrid Tables = PRIMARY KEY + INDEX + verrouillage ligne
-❗ Horizon Catalog = fédérer données externes (Glue, Hive)
-❗ Clean Rooms = partager sans exposer données brutes
-❗ Projection Policies = masquer existence d'une colonne
-```
+## Transformation ⭐
+- UDF / UDTF / UDAF / **UDF vectorisée** (pandas, perf).
+- External functions (API integration obligatoire).
+- Stored procs (SQL/JS/Python), `EXECUTE AS OWNER|CALLER`, transactions.
+- Semi-structuré : `VARIANT`, `LATERAL FLATTEN`, cast `::`.
+- Cortex (serverless) : `COMPLETE`, `SUMMARIZE`, `SENTIMENT`.
+- **Snowpark** : lazy, pushdown, `save_as_table`.

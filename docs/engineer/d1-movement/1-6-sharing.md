@@ -1,61 +1,42 @@
-# 1.6 — Data Sharing et consommation
+# 1.6 Data sharing & solutions de consommation
 
-> **Domaine D1 Data Movement — 28% du DEA-C02**
+> **Domain 1.0 — Data Movement (28%)**
 
-## Data Share vs Clone ⭐
+## Share ou clone ? ⭐
 
-| Critère | Data Share | Clone (Zero-Copy) |
-|---|---|---|
-| **Copie données** | Non | Non (initial) |
-| **Modifiable** | Non (lecture seule) | Oui |
-| **Coût calcul** | Consommateur | Propriétaire du clone |
-| **Isolation** | Non | Oui (après clone) |
-| **Cas d'usage** | Partage externe | Dev/test/backup |
+| Besoin | Choix |
+|---|---|
+| Donner accès live, sans copie, à un autre compte | **Data Share** |
+| Créer un environnement isolé modifiable (dev/test) | **Zero-Copy Clone** |
 
-```sql
--- Data Share
-CREATE SHARE partage_prod;
-GRANT USAGE ON DATABASE sales_db TO SHARE partage_prod;
-GRANT SELECT ON TABLE sales_db.public.ventes TO SHARE partage_prod;
-ALTER SHARE partage_prod ADD ACCOUNTS = 'partenaire.eu-west-1.aws';
-
--- Clone
-CREATE DATABASE db_dev CLONE db_prod;
-```
-
-## Auto-fulfillment ⭐
+## Implémenter un share
 
 ```sql
-CREATE LISTING mon_listing FOR SHARE mon_partage AS $$
-  title: 'Données Ventes 2024'
-  auto_fulfillment:
-    refresh_schedule: '10 MINUTE'
-$$;
+CREATE SHARE ventes_share;
+GRANT USAGE ON DATABASE sales TO SHARE ventes_share;
+GRANT USAGE ON SCHEMA sales.public TO SHARE ventes_share;
+GRANT SELECT ON TABLE sales.public.ventes TO SHARE ventes_share;
+ALTER SHARE ventes_share ADD ACCOUNTS = consumer_acct;
 ```
 
-## Row-Level Filtering dans les partages ⭐
+- **Auto-fulfillment** : réplication automatique du listing vers d'autres régions/clouds pour les consommateurs distants.
+- **Row-level filtering** : limiter les lignes visibles par consommateur (secure views / row access policies).
+
+## Consommation & data apps
+
+| Outil | Usage |
+|---|---|
+| **Secure views** | Exposer une vue filtrée plutôt que la table brute |
+| **Marketplace / listing** | Distribution publique ou privée |
+| **Streamlit** | Dashboards interactifs, apps self-service de consommation |
 
 ```sql
-CREATE SECURE VIEW vue_partage AS
-SELECT * FROM ventes
-WHERE region = (
-    SELECT region FROM mapping_comptes
-    WHERE snowflake_account = CURRENT_ACCOUNT()
-);
-GRANT SELECT ON VIEW vue_partage TO SHARE mon_partage;
+CREATE SECURE VIEW v_ventes_client AS
+  SELECT * FROM ventes WHERE client_id = CURRENT_USER();   -- ex. filtrage
+GRANT SELECT ON VIEW v_ventes_client TO SHARE ventes_share;
 ```
 
-## Streamlit pour la consommation ⭐
+!!! warning "Lecture seule"
+    Le consommateur ne peut **pas** modifier ni re-partager les objets reçus.
 
-```python
-import streamlit as st
-from snowflake.snowpark.context import get_active_session
-
-session = get_active_session()
-st.title("Dashboard Ventes")
-
-region = st.selectbox("Région", ["EMEA", "AMER", "APAC"])
-df = session.sql(f"SELECT * FROM ventes WHERE region = '{region}'").to_pandas()
-st.dataframe(df)
-st.bar_chart(df.set_index('DATE_VENTE')['MONTANT'])
-```
+📎 *Réf. : `docs.snowflake.com/en/user-guide/data-sharing-provider`*

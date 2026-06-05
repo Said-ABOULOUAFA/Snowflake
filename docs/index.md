@@ -1,63 +1,101 @@
-# ❄️ SnowPro Certifications — Documentation Personnelle
+# ❄️ SnowPro Certifications — Documentation personnelle
 
-Documentation basée sur les **study guides officiels Snowflake** (janvier–mai 2026).
+Documentation structurée d'après les **study guides officiels Snowflake** (versions 2025–2026), organisée par **certification → domaine → sujet**.
+
+!!! abstract "Comment naviguer dans ce site"
+    Utilise le **menu du haut** (onglets COF-C03 · DEA-C02 · SPS-C01) et le **sommaire latéral** pour passer d'un sujet à l'autre. Chaque page suit la numérotation officielle de l'examen.
+
+    - 🎓 **Pendant la préparation** : suis l'ordre des domaines, puis révise avec les **Cheat Sheets** et la **FAQ**.
+    - 🏢 **En entreprise** : garde le **[📖 Lexique](revision/lexique.md)** sous la main comme référence rapide, et les pages par domaine comme aide-mémoire technique.
+    - 🔎 La **barre de recherche** (en haut) indexe l'intégralité du site.
 
 ---
 
 ## 🎯 Les 3 certifications ciblées
 
-| Certification | Code | Poids | Prérequis |
-|---|---|---|---|
-| **SnowPro Core** | COF-C03 | — | 6 mois d'expérience Snowflake |
-| **SnowPro Advanced: Data Engineer** | DEA-C02 | — | **COF-C03 obligatoire** + 2 ans d'expérience |
-| **SnowPro Specialty: Snowpark** | SPS-C01 | — | COF-C03 recommandé + 1 an Snowpark |
-
-!!! danger "Ordre obligatoire"
-    Tu **dois** obtenir le COF-C03 avant de pouvoir t'inscrire au DEA-C02. C'est un prérequis officiel.
+| Certification | Code | Questions | Durée | Score | Prix |
+|---|---|---|---|---|---|
+| **SnowPro Core** | COF-C03 | 100 | 115 min | 750/1000 | 175 $ |
+| **SnowPro Advanced: Data Engineer** | DEA-C02 | 65 | 115 min | 750/1000 | 375 $ |
+| **SnowPro Specialty: Snowpark** | SPS-C01 | 55 | 85 min | 750/1000 | 225 $ |
 
 ---
 
-## 📊 Domaines & Poids officiels
+## 🔐 Prérequis officiels (très important)
 
-=== "COF-C03 Core"
-    | Domaine | Poids |
-    |---|---|
-    | D1 — Snowflake AI Data Cloud Features & Architecture | **31%** |
-    | D2 — Account Management & Data Governance | **20%** |
-    | D3 — Data Loading, Unloading & Connectivity | 18% |
-    | D4 — Performance Optimization, Querying & Transformation | **21%** |
-    | D5 — Data Collaboration | 10% |
+!!! danger "Ordre d'enchaînement imposé par Snowflake"
+    Le **SnowPro Core (COF-C03) est le prérequis obligatoire** de **toutes** les certifications Advanced et Specialty. Sans Core en cours de validité, l'inscription au DEA-C02 et au SPS-C01 est **bloquée**.
 
-=== "DEA-C02 Data Engineer"
-    | Domaine | Poids |
-    |---|---|
-    | D1 — Data Movement | **28%** |
-    | D2 — Performance Optimization | 19% |
-    | D3 — Storage & Data Protection | 14% |
-    | D4 — Data Governance | 14% |
-    | D5 — Data Transformation | **25%** |
+| Certification | Prérequis formel | Expérience recommandée |
+|---|---|---|
+| **COF-C03** | *Aucun prérequis formel* | **6 mois minimum** d'utilisation de Snowflake + ANSI SQL de base + notions de cloud |
+| **DEA-C02** | **SnowPro Core certifié (valide)** | **2 ans** d'expérience data engineering en production, dont du Snowflake |
+| **SPS-C01** | **SnowPro Core certifié (valide)** | **1 an** de pratique Snowpark + Python solide (client-side / server-side) |
 
-=== "SPS-C01 Snowpark"
-    | Domaine | Poids |
-    |---|---|
-    | D1 — Snowpark Concepts | 15% |
-    | D2 — Snowpark API for Python | **30%** |
-    | D3 — Snowpark for Data Transformations | **35%** |
-    | D4 — Snowpark Performance Optimization | 20% |
+```
+COF-C03 (Core)  ──►  DEA-C02 (Data Engineer)
+       │
+       └──────────►  SPS-C01 (Snowpark)
+```
+
+!!! info "Validité & renouvellement"
+    Chaque certification est valable **2 ans**. Renouvellement via le programme Continuing Education (CE) ou en obtenant une certification de niveau égal/supérieur.
 
 ---
 
-## ⚠️ Points critiques à maîtriser
+## 📚 Poids des domaines par examen
 
-!!! danger "Sujets très fréquents tous examens confondus"
-    - Architecture 3 couches (Storage / Compute / Cloud Services)
-    - Micro-partitions, clustering depth, pruning
-    - Time Travel vs Fail-safe (durées, accès, coûts)
-    - RBAC : hiérarchie des rôles, DAC, Database Roles
+=== "COF-C03 (Core)"
+
+    | # | Domaine | Poids |
+    |---|---|---|
+    | 1.0 | Snowflake AI Data Cloud Features & Architecture | **31%** |
+    | 4.0 | Performance Optimization, Querying & Transformation | **21%** |
+    | 2.0 | Account Management & Data Governance | 20% |
+    | 3.0 | Data Loading, Unloading & Connectivity | 18% |
+    | 5.0 | Data Collaboration | 10% |
+
+=== "DEA-C02 (Data Engineer)"
+
+    | # | Domaine | Poids |
+    |---|---|---|
+    | 1.0 | Data Movement | **28%** |
+    | 5.0 | Data Transformation | **25%** |
+    | 2.0 | Performance Optimization | 19% |
+    | 3.0 | Storage & Data Protection | 14% |
+    | 4.0 | Data Governance | 14% |
+
+=== "SPS-C01 (Snowpark)"
+
+    | # | Domaine | Poids |
+    |---|---|---|
+    | 3.0 | Snowpark for Data Transformations | **35%** |
+    | 2.0 | Snowpark API for Python | **30%** |
+    | 4.0 | Snowpark Performance Optimization | 20% |
+    | 1.0 | Snowpark Concepts | 15% |
+
+---
+
+## 🔑 Sujets transverses critiques (tombent dans plusieurs examens)
+
+!!! tip "À maîtriser absolument"
+    - Architecture 3 couches (stockage / calcul / services cloud)
+    - Micro-partitions, pruning, clustering & clustering depth
+    - Time Travel, Fail-safe & CDP
+    - RBAC, privilèges sur clones et shares
     - COPY INTO vs Snowpipe vs Snowpipe Streaming
-    - Streams + Tasks : pattern CDC, SYSTEM$STREAM_HAS_DATA
-    - Dynamic Data Masking, Row Access Policies, Projection Policies
-    - Snowpark : lazy evaluation, DataFrames, UDFs vectorisées
-    - Cortex AI : fonctions SQL, Cortex Search, Cortex Analyst
-    - Resource Monitors (aucun crédit supplémentaire !)
-    - Trust Center, DAC vs RBAC
+    - Streams, Tasks, Dynamic Tables (pipelines continus)
+    - Dynamic Data Masking & Row Access Policies
+    - Snowpark : exécution lazy / pushdown client vs serveur
+
+---
+
+## 📎 Sources officielles
+
+- Study guide **COF-C03** : `learn.snowflake.com/en/certifications/snowpro-core-c03/`
+- Study guide **DEA-C02** : `learn.snowflake.com` → SnowPro Advanced: Data Engineer
+- Page **SPS-C01** : `learn.snowflake.com/en/certifications/snowpro-snowpark/`
+- Documentation produit : `docs.snowflake.com`
+
+!!! note "Conseil d'utilisation"
+    Commence par la **Vue d'ensemble** de chaque certification (prérequis + format), puis descends domaine par domaine. Les **Cheat Sheets** en fin de doc servent à la révision finale (J-3).

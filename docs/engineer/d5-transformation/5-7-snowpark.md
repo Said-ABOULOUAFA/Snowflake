@@ -1,80 +1,43 @@
-# 5.7 — Snowpark pour les transformations DEA-C02
+# 5.7 Snowpark pour les transformations
 
-> **Domaine D5 Data Transformation — 25% du DEA-C02**
+> **Domain 5.0 — Data Transformation (25%)**
 
-## Architecture Snowpark ⭐
+## Architecture (pushdown)
 
-```
-Code Python (local ou Notebook)
-        │ Lazy Evaluation
-        ▼
-Plan logique (DataFrame API)
-        │ Compile en SQL
-        ▼
-Moteur Snowflake (dans le warehouse)
-        │ Résultat
-        ▼
-Table / Stage / Retour Python
-```
+![Pushdown Snowpark](../../assets/snowpark-pushdown.svg)
 
-## Requêtes et filtres ⭐
+Le code Python/Java/Scala est traduit en **plan logique** puis exécuté **dans le warehouse Snowflake** — aucune donnée ne transite côté client (sauf `.show()`/`.collect()`).
+
+## DataFrames Snowpark
 
 ```python
-from snowflake.snowpark.functions import col, year, month, upper, trim
+from snowflake.snowpark.functions import col, sum as sum_, avg, when, lit
 
 df = session.table("ventes")
 
-# Filtres
-df.filter(col("region") == "EMEA")
-df.filter((col("montant") > 100) & (year(col("date_vente")) == 2024))
-df.filter(col("client_id").isin([1, 2, 3]))
-df.where(col("statut").isNotNull())
+df_resume = (df
+    .filter(col("region") == "EMEA")
+    .group_by("region", "date_vente")
+    .agg(sum_("montant").alias("total"), avg("montant").alias("moyenne"))
+    .sort(col("date_vente").desc()))
 
-# Sélection et transformation
-df.select("id", "region", col("montant").alias("ca"))
-df.with_column("nom_maj", upper(trim(col("nom"))))
-df.with_columns(
-    ["annee", "mois"],
-    [year(col("date_vente")), month(col("date_vente"))]
-)
+df_resume.write.mode("overwrite").save_as_table("ventes_resume_emea")
 ```
-
-## Agrégations ⭐
 
 ```python
-from snowflake.snowpark.functions import sum as sum_, avg, count, max as max_
-
-# GROUP BY + AGG
-df.group_by("region").agg(
-    sum_("montant").alias("total"),
-    avg("montant").alias("moyenne"),
-    count("*").alias("nb"),
-    max_("montant").alias("max_vente")
-)
-
-# Plusieurs colonnes
-df.group_by("region", "annee").agg(sum_("montant").alias("total"))
+# Colonnes calculées, CASE WHEN, jointures
+df = df.with_column("tva", col("montant") * lit(0.2))
+df = df.with_column("categorie",
+    when(col("montant") > 1000, lit("Premium"))
+    .when(col("montant") > 100, lit("Standard"))
+    .otherwise(lit("Petit")))
+df_join = df.join(session.table("clients"), df["client_id"] == col("id"), "left")
 ```
 
-## Manipuler les DataFrames ⭐
+!!! danger "Piège exam"
+    Snowpark est **lazy** : les transformations (`filter`, `select`, `join`) ne s'exécutent qu'à une **action** (`show`, `collect`, `count`, `save_as_table`). Tout est *pushed down* en SQL dans Snowflake → pas de transfert de données massif vers le client.
 
-```python
-# Jointures
-df_v.join(df_c, df_v["client_id"] == df_c["id"], "left")
+!!! tip
+    `df.save_as_table(mode="overwrite"|"append")` matérialise le résultat. `cache_result()` matérialise un DataFrame intermédiaire réutilisé plusieurs fois.
 
-# Union
-df_2023.union_all(df_2024)
-
-# Window functions
-from snowflake.snowpark import Window
-w = Window.partition_by("region").order_by(col("date_vente"))
-df.with_column("cumul", sum_(col("montant")).over(w))
-
-# Écriture
-df.write.mode("overwrite").save_as_table("ma_table")
-df.write.mode("append").save_as_table("ma_table")
-
-# Export stage
-df.write.copy_into_location("@mon_stage/exports/",
-    file_format_type="parquet", header=True, overwrite=True)
-```
+📎 *Réf. : `docs.snowflake.com/en/developer-guide/snowpark/index`*

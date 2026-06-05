@@ -1,95 +1,43 @@
-# 4.2 — Protection des données
+# 4.2 Protection des données (masking, row-level, clean rooms)
 
-> **Domaine D4 Data Governance — 14% du DEA-C02**
+> **Domain 4.0 — Data Governance (14%)**
 
-## Horizon Catalog ⭐
-
-```sql
--- Fédérer des données depuis AWS Glue
-CREATE CATALOG INTEGRATION glue_catalog
-  CATALOG_SOURCE  = GLUE
-  CATALOG_NAMESPACE = 'mon_namespace'
-  GLUE_AWS_ROLE_ARN = 'arn:aws:iam::123:role/sf-glue'
-  GLUE_CATALOG_ID   = '123456789'
-  GLUE_REGION       = 'eu-west-1'
-  ENABLED = TRUE;
-```
-
-## Column-Level Security ⭐
-
-### Dynamic Data Masking
+## Dynamic Data Masking
 
 ```sql
-CREATE MASKING POLICY mp_email
-  AS (val STRING) RETURNS STRING ->
-  CASE
-    WHEN CURRENT_ROLE() IN ('DBA') THEN val
-    ELSE REGEXP_REPLACE(val, '.+@', '***@')
-  END;
+CREATE MASKING POLICY email_mask AS (val STRING) RETURNS STRING ->
+  CASE WHEN CURRENT_ROLE() IN ('ADMIN') THEN val
+       ELSE REGEXP_REPLACE(val, '.+@', '****@') END;
 
-ALTER TABLE clients MODIFY COLUMN email SET MASKING POLICY mp_email;
+ALTER TABLE clients MODIFY COLUMN email
+  SET MASKING POLICY email_mask;
 ```
 
-### External Tokenization
+## Row Access Policy (sécurité au niveau ligne)
 
 ```sql
-CREATE MASKING POLICY mp_tokenize
-  AS (val STRING) RETURNS STRING ->
-  CASE
-    WHEN CURRENT_ROLE() = 'DBA' THEN val
-    ELSE vault_udf(val)  -- appel à une External Function de tokenisation
-  END;
+CREATE ROW ACCESS POLICY rap_region AS (region STRING) RETURNS BOOLEAN ->
+  EXISTS (SELECT 1 FROM mapping_roles
+          WHERE role = CURRENT_ROLE() AND region_autorisee = region);
+
+ALTER TABLE ventes ADD ROW ACCESS POLICY rap_region ON (region);
 ```
 
-### Projection Policies ⭐
+| Mécanisme | Granularité | Cas d'usage |
+|---|---|---|
+| **Masking policy** | Colonne | Masquer PII selon le rôle |
+| **Row access policy** | Ligne | Cloisonner par région/tenant |
+| **External tokenization** | Colonne | Tokeniser via fonction externe |
+| **Tag-based masking** | Colonne (via tag) | Appliquer à grande échelle |
 
-Empêche de voir qu'une colonne existe.
+## Data Clean Rooms
 
-```sql
-CREATE PROJECTION POLICY pp_ssn
-  AS () RETURNS PROJECTION_CONSTRAINT ->
-  CASE
-    WHEN CURRENT_ROLE() IN ('COMPLIANCE_TEAM') THEN PROJECTION_CONSTRAINT(ALLOW => TRUE)
-    ELSE PROJECTION_CONSTRAINT(ALLOW => FALSE)
-  END;
+Permettent à deux parties de **croiser des données sans se les exposer** (analytique sur intersection, jamais d'accès aux lignes brutes du partenaire).
 
-ALTER TABLE employes MODIFY COLUMN ssn SET PROJECTION POLICY pp_ssn;
-```
+!!! danger "Piège exam"
+    **Masking** = transforme la *valeur affichée* (colonne). **Row access policy** = filtre les *lignes visibles*. Le **tag-based masking** applique une policy à toutes les colonnes portant un tag donné → gouvernance à l'échelle.
 
-## Row-Level Security ⭐
+!!! tip
+    Les policies sont évaluées à l'exécution selon `CURRENT_ROLE()` / `CURRENT_USER()` ; tester avec `USE ROLE` pour valider.
 
-### Row Access Policies
-
-```sql
-CREATE ROW ACCESS POLICY rap_par_region
-  AS (region STRING) RETURNS BOOLEAN ->
-  CASE
-    WHEN CURRENT_ROLE() = 'ADMIN' THEN TRUE
-    ELSE region = CURRENT_ROLE()
-  END;
-
-ALTER TABLE ventes ADD ROW ACCESS POLICY rap_par_region ON (region);
-```
-
-### Aggregation Policies
-
-```sql
-CREATE AGGREGATION POLICY ap_min_group
-  AS () RETURNS AGGREGATION_CONSTRAINT ->
-  CASE
-    WHEN CURRENT_ROLE() = 'ANALYST' THEN AGGREGATION_CONSTRAINT(MIN_GROUP_SIZE => 5)
-    ELSE NO_AGGREGATION_CONSTRAINT()
-  END;
-
-ALTER TABLE clients SET AGGREGATION POLICY ap_min_group;
-```
-
-## Data Clean Rooms ⭐
-
-Partager des analyses sans exposer les données brutes.
-
-```sql
--- Via l'interface Snowsight : Collaboration → Clean Rooms
--- Ou via l'API développeur :
-SELECT SNOWFLAKE.DATA_CLEAN_ROOM.create_cleanroom('clean_room_partenaire', ...);
-```
+📎 *Réf. : `docs.snowflake.com/en/user-guide/security-column-ddm-intro`*

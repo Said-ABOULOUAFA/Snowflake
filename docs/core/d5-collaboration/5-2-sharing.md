@@ -1,67 +1,35 @@
-# 5.2 — Data Sharing
+# 5.2 Data Sharing
 
-> **Domaine D5 — 10% du COF-C03**
+> **Domain 5.0 — Data Collaboration (10%)**
 
 ## Secure Data Sharing ⭐
 
-Partager des données **sans copie** — accès direct aux données du fournisseur.
+Partage **sans copie** : le consommateur lit les données du fournisseur via les **métadonnées** (aucune duplication, toujours à jour).
 
-```sql
--- FOURNISSEUR : créer un partage
-CREATE SHARE partage_ventes;
-GRANT USAGE ON DATABASE sales_db TO SHARE partage_ventes;
-GRANT USAGE ON SCHEMA sales_db.public TO SHARE partage_ventes;
-GRANT SELECT ON TABLE sales_db.public.ventes TO SHARE partage_ventes;
-ALTER SHARE partage_ventes ADD ACCOUNTS = 'abc12345.eu-west-1.aws';
-
--- CONSOMMATEUR : créer une base depuis le partage
-CREATE DATABASE ventes_partagees FROM SHARE fournisseur.partage_ventes;
-```
-
-## Caractéristiques clés ⭐
-
-| Caractéristique | Valeur |
+| Acteur | Rôle |
 |---|---|
-| Copie des données | ❌ Aucune |
-| Accès consommateur | Lecture seule |
-| Coût calcul | Payé par le **consommateur** |
-| Coût stockage | Payé par le **fournisseur** |
-| Latence | Temps réel |
-
-!!! danger "Question fréquente"
-    Le consommateur d'un partage **ne peut PAS** accorder des droits sur les objets partagés à d'autres.
-
-## Objets partageables vs non-partageables
-
-| Partageable | Non partageable |
-|---|---|
-| Tables ✅ | Tables externes ❌ |
-| Vues sécurisées ✅ | Stages ❌ |
-| Vues matérialisées sécurisées ✅ | |
-| UDFs sécurisées ✅ | |
-
-## Vues sécurisées — Partager avec filtrage
+| **Provider** | Crée le share, accorde l'accès aux objets |
+| **Consumer** | Compte Snowflake qui consomme le share |
+| **Reader account** | Compte géré/payé par le provider pour un consommateur **sans** compte Snowflake |
 
 ```sql
-CREATE SECURE VIEW vue_ventes_publiques AS
-SELECT id, date_vente, montant, region
-FROM ventes WHERE statut = 'PUBLIÉ';
-
-GRANT SELECT ON VIEW vue_ventes_publiques TO SHARE mon_partage;
+CREATE SHARE ventes_share;
+GRANT USAGE ON DATABASE sales TO SHARE ventes_share;
+GRANT USAGE ON SCHEMA sales.public TO SHARE ventes_share;
+GRANT SELECT ON TABLE sales.public.ventes TO SHARE ventes_share;
+ALTER SHARE ventes_share ADD ACCOUNTS = consumer_acct;
 ```
 
-## Reader Accounts ⭐
+!!! danger "Pièges examen"
+    - Les objets partagés sont en **lecture seule** côté consommateur.
+    - Le consommateur **ne peut pas re-partager** ni accorder des droits dessus.
+    - Le **provider** garde le contrôle total ; révocation = effet immédiat.
+    - Pas de coût de stockage côté consommateur ; il paie son **propre compute**.
 
-Pour les partenaires **sans compte Snowflake**.
+## Direct shares, listings, clean rooms
 
-```sql
-CREATE MANAGED ACCOUNT lecteur_externe
-  ADMIN_NAME = 'admin' ADMIN_PASSWORD = 'Pwd123!' TYPE = READER;
-ALTER SHARE mon_partage ADD ACCOUNTS = lecteur_externe;
-SHOW MANAGED ACCOUNTS;
-```
+- **Direct share** : partage direct compte-à-compte.
+- **Sharing & resharing** : selon les politiques du listing.
+- **Data Clean Rooms** : collaboration sur données sensibles sans exposer les lignes brutes.
 
-!!! warning "Reader Account"
-    - Géré et **facturé par le fournisseur**
-    - Utilise les **warehouses du fournisseur**
-    - Fonctionnalités limitées (lecture seule)
+📎 *Réf. : `docs.snowflake.com/en/user-guide/data-sharing-intro`*

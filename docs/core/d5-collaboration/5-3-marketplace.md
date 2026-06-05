@@ -1,61 +1,35 @@
-# 5.3 — Snowflake Marketplace & Listings
+# 5.3 Marketplace & listings
 
-> **Domaine D5 — 10% du COF-C03**
+> **Domain 5.0 — Data Collaboration (10%)**
 
 ## Snowflake Marketplace ⭐
 
-Place de marché pour **partager, acheter ou accéder** à des données.
-
-```sql
--- Listing privé (partage B2B ciblé)
-CREATE LISTING mon_listing_prive
-  FOR SHARE mon_partage AS $$
-    title: 'Données Météo France'
-    description: 'Données météo historiques'
-  $$;
-
-ALTER LISTING mon_listing_prive ADD ACCOUNTS = ('compte_partenaire');
-
--- Voir les listings disponibles
-SHOW LISTINGS;
-```
+Place de marché de **données** et d'**applications** entre comptes Snowflake.
 
 | Type de listing | Visibilité |
 |---|---|
-| **Privé** | Comptes invités uniquement |
-| **Public** | Tout le Marketplace |
+| **Private listing** | Ciblé sur des comptes/organisations précis |
+| **Public listing** | Visible sur la Marketplace publique |
 
-## Native Apps Framework ⭐
+- Repose sur le **Secure Data Sharing** (pas de copie de données).
+- Le consommateur monte le share comme une base et requête normalement.
 
-Créer et distribuer des **applications Snowflake** via le Marketplace.
+## Native Apps ⭐
 
-```sql
-CREATE APPLICATION PACKAGE mon_app_package;
+Le **Snowflake Native App Framework** permet de distribuer une **application** (logique + données + UI Streamlit) qui s'exécute **dans le compte du consommateur**.
 
-ALTER APPLICATION PACKAGE mon_app_package
-  ADD VERSION v1_0 USING @mon_stage/app/;
+| Concept | Description |
+|---|---|
+| **Application package** | Paquet versionné publié par le provider |
+| **Listing** | Distribution via Marketplace (privé/public) |
+| **Exécution** | Code et données dans le compte **du consommateur** |
 
--- Consommateur
-CREATE APPLICATION mon_app FROM APPLICATION PACKAGE mon_app_package
-  USING VERSION v1_0;
-```
+!!! tip "Différence clé"
+    - **Data Sharing / Marketplace** → partage de **données**.
+    - **Native Apps** → distribution d'une **application** (avec logique métier) exécutée chez le consommateur.
 
-## Data Clean Rooms ⭐
+## Reader accounts (rappel)
 
-Analyser des données croisées **sans exposer les données brutes**.
+Pour un consommateur **sans** compte Snowflake : le provider crée un **reader account** (qu'il gère et facture).
 
-- Chaque partie voit uniquement les **résultats agrégés**
-- Les données brutes ne sont jamais exposées
-- **Differential privacy** disponible pour masquer les petits groupes
-- Utilisé pour : marketing croisé, analyses partenaires, compliance
-
-## Réplication Snowgrid ⭐
-
-Pour partager entre régions ou clouds différents.
-
-```sql
-ALTER DATABASE ma_db ENABLE REPLICATION TO ACCOUNTS aws.eu-west-1.compte_cible;
-CREATE DATABASE ma_db_replica AS REPLICA OF source_account.ma_db;
-ALTER DATABASE ma_db_replica REFRESH;
-ALTER DATABASE ma_db_replica PRIMARY;  -- failover
-```
+📎 *Réf. : `docs.snowflake.com/en/user-guide/data-marketplace`*

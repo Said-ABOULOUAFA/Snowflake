@@ -1,77 +1,55 @@
-# 1.4 — Pipelines de données continus
+# 1.4 Pipelines de données continus
 
-> **Domaine D1 Data Movement — 28% du DEA-C02**
+> **Domain 1.0 — Data Movement (28%)**
 
-## Pattern Stream + Task (CDC) ⭐
+![Pipeline continu Stage → Snowpipe → Stream → Task](../../assets/continuous-pipeline.svg)
+
+## Briques
+
+| Objet | Rôle |
+|---|---|
+| **Stage** | Zone d'atterrissage des fichiers |
+| **Snowpipe** | Ingestion auto (fichiers) ; **Snowpipe Streaming** (lignes) |
+| **Stream** | Capture des changements (CDC) sur une table |
+| **Task** | Exécution planifiée / dépendante de SQL ou procédures |
+| **Dynamic Table** | Transformation déclarative auto-rafraîchie (`TARGET_LAG`) |
+| **Materialized View** | Agrégat maintenu auto |
+
+## Streams + Tasks (MERGE incrémental) ⭐
 
 ```sql
--- Bronze → Silver avec Stream + Task
-CREATE STREAM stream_orders ON TABLE orders_raw;
+CREATE STREAM s_raw ON TABLE ventes_raw;
 
-CREATE TASK task_process_orders
+CREATE TASK t_merge
   WAREHOUSE = wh_etl
-  SCHEDULE  = '5 MINUTE'
-  WHEN SYSTEM$STREAM_HAS_DATA('stream_orders')
+  SCHEDULE = '5 MINUTE'
+  WHEN SYSTEM$STREAM_HAS_DATA('s_raw')
 AS
-MERGE INTO orders_silver AS tgt
-USING (SELECT * FROM stream_orders WHERE METADATA$ACTION = 'INSERT') AS src
-  ON tgt.id = src.id
-WHEN MATCHED THEN UPDATE SET tgt.status = src.status
-WHEN NOT MATCHED THEN INSERT (id, status, amount) VALUES (src.id, src.status, src.amount);
+  MERGE INTO ventes t USING s_raw s ON t.id = s.id
+  WHEN MATCHED AND s.METADATA$ACTION='DELETE' THEN DELETE
+  WHEN MATCHED THEN UPDATE SET t.montant = s.montant
+  WHEN NOT MATCHED THEN INSERT (id, montant) VALUES (s.id, s.montant);
 
-ALTER TASK task_process_orders RESUME;  -- TOUJOURS requis !
+ALTER TASK t_merge RESUME;
 ```
 
-## Dynamic Tables ⭐
+## Dynamic Table (alternative déclarative)
 
 ```sql
-CREATE DYNAMIC TABLE dt_bronze
-  TARGET_LAG = '5 minutes' WAREHOUSE = wh_etl
-AS SELECT * FROM raw_stage WHERE is_valid = TRUE;
-
-CREATE DYNAMIC TABLE dt_silver
-  TARGET_LAG = DOWNSTREAM WAREHOUSE = wh_etl
-AS SELECT *, UPPER(nom) AS nom_norm FROM dt_bronze;
-
-CREATE DYNAMIC TABLE dt_gold
-  TARGET_LAG = DOWNSTREAM WAREHOUSE = wh_etl
-AS SELECT region, SUM(montant) AS total FROM dt_silver GROUP BY region;
+CREATE DYNAMIC TABLE dt_ventes
+  TARGET_LAG = '5 minutes'
+  WAREHOUSE = wh_etl
+AS SELECT region, SUM(montant) total FROM ventes GROUP BY region;
 ```
 
-## Snowpipe — Auto Ingest vs REST API ⭐
+| Stream/Task | Dynamic Table |
+|---|---|
+| Contrôle fin, impératif | Déclaratif, géré par Snowflake |
+| MERGE explicite | `TARGET_LAG` |
 
-```sql
--- Auto Ingest (SQS/Event Grid/Pub Sub)
-CREATE PIPE pipe_auto AUTO_INGEST = TRUE AS
-COPY INTO ventes FROM @stage_s3/ventes/ FILE_FORMAT = (FORMAT_NAME = fmt_parquet);
+!!! tip "Snowpipe Streaming vs Kafka connector"
+    Snowpipe Streaming ingère des **lignes** (faible latence). Le Kafka connector peut s'appuyer dessus pour du streaming quasi temps réel.
 
--- REST API (déclenchement explicite)
-CREATE PIPE pipe_api AUTO_INGEST = FALSE AS
-COPY INTO ventes FROM @stage_s3/ventes/ FILE_FORMAT = (FORMAT_NAME = fmt_parquet);
--- POST https://compte.snowflakecomputing.com/v1/data/pipes/.../insertFiles
-```
+- Pipelines aussi orchestrables via **Notebooks**, **Snowflake Scripting**, **SQL API**, **Openflow**.
 
-## Snowflake Scripting ⭐
-
-```sql
-CREATE OR REPLACE PROCEDURE run_etl(p_date STRING)
-RETURNS STRING LANGUAGE SQL AS
-$$
-DECLARE nb_rows INTEGER;
-BEGIN
-    COPY INTO raw_orders FROM @stage_s3/orders/
-      PATTERN = CONCAT('.*', :p_date, '.*\\.parquet');
-    nb_rows := SQLROWCOUNT;
-    INSERT INTO orders_clean
-      SELECT * FROM raw_orders WHERE DATE(created_at) = :p_date::DATE;
-    RETURN 'OK : ' || nb_rows::STRING || ' lignes';
-EXCEPTION WHEN OTHER THEN
-    RETURN 'ERREUR : ' || SQLERRM;
-END;
-$$;
-CALL run_etl('2024-06-01');
-```
-
-## Openflow (à venir)
-
-Orchestration de pipelines native dans Snowflake. **Non testé à l'examen** tant que pas globalement GA.
+📎 *Réf. : `docs.snowflake.com/en/user-guide/data-pipelines-intro`*

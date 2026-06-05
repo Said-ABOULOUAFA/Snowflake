@@ -1,59 +1,47 @@
-# 3.1 — Data Recovery : Time Travel, Fail-safe, Réplication
+# 3.1 Data recovery (Time Travel, Fail-safe, réplication)
 
-> **Domaine D3 Storage — 14% du DEA-C02**
+> **Domain 3.0 — Storage & Data Protection (14%)**
 
-## Time Travel avancé ⭐
+## Cycle de vie continu des données (CDP)
+
+![Cycle de vie CDP](../../assets/cdp-lifecycle.svg)
+
+| Phase | Durée | Accès | Récupération |
+|---|---|---|---|
+| **Active** | — | Lecture/écriture | — |
+| **Time Travel** | 0–90 j (Enterprise) ; 0–1 j (Standard) | `AT/BEFORE`, `UNDROP` | Utilisateur |
+| **Fail-safe** | 7 j (fixe, tables permanentes) | Aucun (Snowflake only) | Support Snowflake |
 
 ```sql
--- Récupérer des données supprimées par erreur
-SELECT * FROM ventes AT (TIMESTAMP => '2024-06-01 00:00:00'::TIMESTAMP_TZ);
-SELECT * FROM ventes AT (OFFSET => -3600);           -- il y a 1 heure
-SELECT * FROM ventes BEFORE (STATEMENT => 'query_id'); -- avant un statement
+-- Interroger un état passé
+SELECT * FROM ventes AT(OFFSET => -3600);            -- il y a 1 h
+SELECT * FROM ventes BEFORE(STATEMENT => '<query_id>');
+SELECT * FROM ventes AT(TIMESTAMP => '2026-06-01 09:00:00'::timestamp);
 
--- Configurer par objet
+-- Restaurer un objet supprimé
+UNDROP TABLE ventes;
+
+-- Définir la rétention
 ALTER TABLE ventes SET DATA_RETENTION_TIME_IN_DAYS = 30;
-ALTER SCHEMA finance SET DATA_RETENTION_TIME_IN_DAYS = 10;
-ALTER DATABASE ma_db SET DATA_RETENTION_TIME_IN_DAYS = 1;
-
--- Question officielle DEA-C02 :
--- Solution la plus économique : ALTER SCHEMA (pas DATABASE ni ACCOUNT)
-ALTER SCHEMA SALES SET DATA_RETENTION_TIME_IN_DAYS = 10;
-
--- Impact des Streams sur Time Travel
--- Un stream doit être consommé AVANT expiration du Time Travel
--- Sinon le stream devient STALE (invalide)
-SHOW STREAMS;
--- → colonne "stale" indique si le stream est expiré
 ```
 
-## Fail-safe ⭐
+## Types de tables & protection ⭐
 
-| Propriété | Valeur |
-|---|---|
-| Durée | **7 jours** — fixe, non configurable |
-| Accès | **Support Snowflake UNIQUEMENT** |
-| Tables concernées | **Permanentes uniquement** |
-| Après Time Travel | Commence à J+Time_Travel_period |
+| Type | Time Travel | Fail-safe |
+|---|---|---|
+| `PERMANENT` | 0–90 j | 7 j |
+| `TRANSIENT` | 0–1 j | **Aucun** |
+| `TEMPORARY` | 0–1 j (session) | **Aucun** |
 
-## Réplication cross-region & cross-cloud ⭐
+!!! danger "Piège exam"
+    **Fail-safe n'est PAS configurable** et n'est PAS accessible par l'utilisateur (récupération via le support Snowflake uniquement, 7 jours). Les tables `TRANSIENT`/`TEMPORARY` n'ont **pas** de Fail-safe → moins de coûts de stockage mais aucune protection ultime.
+
+## Réplication & failover
 
 ```sql
--- Activer la réplication
-ALTER DATABASE ma_db ENABLE REPLICATION TO ACCOUNTS aws.us-east-1.compte_dr;
-ALTER DATABASE ma_db ENABLE REPLICATION TO ACCOUNTS azure.westeurope.compte_dr;
-
--- Côté secondaire : créer le replica
-CREATE DATABASE ma_db_replica AS REPLICA OF source.aws.eu-west-1.ma_db;
-
--- Rafraîchir
-ALTER DATABASE ma_db_replica REFRESH;
-
--- Failover (promouvoir le secondaire en primaire)
-ALTER DATABASE ma_db_replica PRIMARY;
-ALTER DATABASE ma_db_replica FAILOVER;
-
--- Réplication de stages, pipes, historique de chargement
-ALTER DATABASE ma_db ENABLE REPLICATION
-  TO ACCOUNTS aws.us-east-1.dr
-  INCLUDE FAILOVER GROUPS;
+ALTER DATABASE ventes ENABLE REPLICATION TO ACCOUNTS org.compte_secondaire;
 ```
+
+Réplication de bases/comptes pour la **continuité d'activité** (BCDR) entre régions/clouds ; bascule via groupes de failover.
+
+📎 *Réf. : `docs.snowflake.com/en/user-guide/data-time-travel`*

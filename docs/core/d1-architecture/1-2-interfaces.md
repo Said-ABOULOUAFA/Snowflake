@@ -1,125 +1,32 @@
-# 1.2 — Interfaces & Outils Snowflake
+# 1.2 Utiliser les interfaces & outils Snowflake
 
-> **Domaine D1 — 31% du COF-C03**
+> **Domain 1.0 — Architecture (31%)**
 
-## Snowsight — Interface Web ⭐
+## Interfaces principales
 
-Interface principale de Snowflake, accessible via navigateur.
-
-**Fonctionnalités clés :**
-- Éditeur SQL avec autocomplétion et historique des requêtes
-- **Query Profile** — analyse visuelle des plans d'exécution
-- **Worksheets** — espaces de travail collaboratifs
-- **Dashboards** — visualisations intégrées
-- **Data Governance** — Data Lineage, Trust Center
-- **Monitoring** — Task History, Pipe Status, Warehouse usage
-- **Snowflake Marketplace** — accès aux données partagées
-
-```sql
--- Changer de rôle dans Snowsight (ou SQL)
-USE ROLE analyst;
-USE WAREHOUSE wh_bi;
-USE DATABASE ma_db;
-USE SCHEMA public;
-```
-
----
-
-## Snowflake CLI ⭐
-
-Interface en ligne de commande pour automatiser et scripter.
-
-```bash
-# Installation
-pip install snowflake-cli-labs
-
-# Connexion
-snow connection add
-
-# Exécuter une requête
-snow sql -q "SELECT CURRENT_VERSION()"
-
-# Déployer une fonction Snowpark
-snow snowpark deploy
-
-# Uploader des fichiers (stage)
-snow stage copy ./data.csv @mon_stage/
-```
-
-!!! info "Usages typiques du CLI"
-    - CI/CD pipelines
-    - Déploiement de Snowpark (UDFs, procédures)
-    - Scripts d'administration automatisés
-    - Migrations de schémas
-
----
-
-## IDE Integrations
-
-Snowflake s'intègre avec les principaux environnements de développement :
-
-| Outil | Type d'intégration |
+| Interface | Usage |
 |---|---|
-| **Visual Studio Code** | Extension Snowflake + Snowpark support |
-| **IntelliJ / PyCharm** | Connecteur JDBC |
-| **Jupyter Notebooks** | Python Connector + Snowpark |
-| **Snowflake Notebooks** | Natif dans Snowsight |
+| **Snowsight** | Interface web par défaut : worksheets, dashboards, Query Profile, monitoring, gestion d'objets |
+| **Snowflake CLI** (`snow`) | Outil ligne de commande moderne (remplace progressivement SnowSQL) pour scripts, déploiement, Snowpark |
+| **SnowSQL** | Client CLI SQL historique |
+| **IDE / VS Code** | Extension Snowflake pour VS Code (édition SQL, Snowpark, notebooks) |
+| **Drivers / connecteurs** | JDBC, ODBC, Python, Node.js, Go, .NET, Spark, Kafka |
 
-### VS Code — Extension Snowflake
+## Snowsight — fonctions clés à connaître
 
-```json
-// .vscode/settings.json
-{
-  "snowflake.account": "mon_compte.eu-west-1",
-  "snowflake.username": "mon_user",
-  "snowflake.authenticator": "externalbrowser"
-}
-```
-
----
-
-## Hiérarchie des objets Snowflake ⭐
-
-```
-Organisation
-    └── Compte (Account)
-            ├── Utilisateurs & Rôles
-            ├── Warehouses
-            └── Bases de données (Database)
-                    └── Schémas (Schema)
-                            ├── Tables
-                            ├── Vues
-                            ├── Stages
-                            ├── File Formats
-                            ├── Pipes
-                            ├── Streams
-                            ├── Tasks
-                            ├── UDFs
-                            ├── Procédures stockées
-                            ├── Sequences
-                            ├── Shares
-                            ├── ML Models
-                            └── Applications
-```
-
-### Session & Variables de contexte ⭐
+- **Worksheets** : SQL et Python (Snowpark).
+- **Query Profile** : analyse visuelle de l'exécution (voir 4.1).
+- **Dashboards** : visualisations à partir de worksheets.
+- **Data → Databases** : explorateur d'objets.
+- **Admin** : warehouses, resource monitors, coûts, utilisateurs/rôles, **Trust Center**.
 
 ```sql
--- Voir les paramètres actifs
-SELECT CURRENT_ROLE(), CURRENT_WAREHOUSE(), 
-       CURRENT_DATABASE(), CURRENT_SCHEMA();
-
--- Paramètres de session
-SHOW PARAMETERS;
-SHOW PARAMETERS LIKE 'TIMEZONE';
-
--- Modifier un paramètre de session
-ALTER SESSION SET TIMEZONE = 'Europe/Paris';
-ALTER SESSION SET QUERY_TAG = 'mon_pipeline_etl';
-
--- Hiérarchie de précédence des paramètres
--- Session > Utilisateur > Rôle > Compte
+-- Contexte de session (souvent testé)
+SELECT CURRENT_ACCOUNT(), CURRENT_REGION(), CURRENT_USER(),
+       CURRENT_ROLE(), CURRENT_WAREHOUSE(), CURRENT_DATABASE(), CURRENT_SCHEMA();
 ```
 
-!!! tip "Précédence des paramètres"
-    Un paramètre défini au niveau **Session** écrase celui défini au niveau **Utilisateur**, qui écrase **Rôle**, qui écrase **Compte**. C'est la hiérarchie officielle COF-C03.
+!!! tip "Notebooks & Streamlit"
+    **Snowflake Notebooks** (cellules SQL/Python) et **Streamlit in Snowflake** permettent de développer et publier des apps de données **dans** Snowflake, sans déplacer les données.
+
+📎 *Réf. : `docs.snowflake.com/en/user-guide/ui-snowsight`*

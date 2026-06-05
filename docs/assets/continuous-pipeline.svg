@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" font-family="Segoe UI, Arial, sans-serif">
+  <style>.t{font-size:12px;fill:#33536e}.b{font-size:15px;fill:#0b3d66;font-weight:bold}.box{stroke:#1565c0;stroke-width:1.5;fill:#e3f2fd}</style>
+  <text x="380" y="26" text-anchor="middle" class="b" font-size="17">Pipeline de données continu</text>
+  <defs><marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#555"/></marker></defs>
+
+  <rect x="20" y="70" width="120" height="60" rx="6" class="box" fill="#d7ecff"/><text x="80" y="96" text-anchor="middle" class="t" font-weight="bold">Source / Stage</text><text x="80" y="114" text-anchor="middle" class="t">externe ou interne</text>
+  <rect x="170" y="70" width="120" height="60" rx="6" class="box"/><text x="230" y="96" text-anchor="middle" class="t" font-weight="bold">Snowpipe</text><text x="230" y="114" text-anchor="middle" class="t">auto-ingest / REST</text>
+  <rect x="320" y="70" width="120" height="60" rx="6" class="box"/><text x="380" y="96" text-anchor="middle" class="t" font-weight="bold">Table RAW</text>
+  <rect x="470" y="70" width="120" height="60" rx="6" class="box"/><text x="530" y="92" text-anchor="middle" class="t" font-weight="bold">Stream</text><text x="530" y="110" text-anchor="middle" class="t">capture CDC</text>
+  <rect x="620" y="70" width="120" height="60" rx="6" class="box"/><text x="680" y="92" text-anchor="middle" class="t" font-weight="bold">Task</text><text x="680" y="110" text-anchor="middle" class="t">planifiée / cron</text>
+
+  <line x1="140" y1="100" x2="168" y2="100" stroke="#555" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="290" y1="100" x2="318" y2="100" stroke="#555" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="440" y1="100" x2="468" y2="100" stroke="#555" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="590" y1="100" x2="618" y2="100" stroke="#555" stroke-width="2" marker-end="url(#ar)"/>
+
+  <rect x="320" y="175" width="270" height="60" rx="6" class="box" fill="#c8f7d4" stroke="#2e7d32"/>
+  <text x="455" y="200" text-anchor="middle" class="t" font-weight="bold">Table MERGE / cible analytique</text>
+  <text x="455" y="220" text-anchor="middle" class="t">consommée par BI / ML</text>
+  <line x1="680" y1="130" x2="680" y2="205" stroke="#555" stroke-width="2"/>
+  <line x1="680" y1="205" x2="592" y2="205" stroke="#555" stroke-width="2" marker-end="url(#ar)"/>
+
+  <rect x="20" y="175" width="270" height="60" rx="6" fill="#fff7d6" stroke="#e0a800"/>
+  <text x="35" y="197" class="t" font-weight="bold">Alternative déclarative</text>
+  <text x="35" y="217" class="t">Dynamic Table = TARGET_LAG, rafraîchissement géré par Snowflake.</text>
+</svg>

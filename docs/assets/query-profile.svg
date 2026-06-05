@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 340" font-family="Segoe UI, Arial, sans-serif">
+  <style>.t{font-size:12px;fill:#33536e}.b{font-size:15px;fill:#0b3d66;font-weight:bold}.n{stroke:#1565c0;stroke-width:1.5;fill:#e3f2fd}</style>
+  <text x="380" y="26" text-anchor="middle" class="b" font-size="17">Lecture d'un Query Profile</text>
+  <defs><marker id="ap" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#555"/></marker></defs>
+
+  <rect x="300" y="55" width="160" height="46" rx="6" class="n"/><text x="380" y="83" text-anchor="middle" class="t" font-weight="bold">Result</text>
+  <rect x="300" y="125" width="160" height="46" rx="6" class="n" fill="#ffe0e0" stroke="#c62828"/><text x="380" y="148" text-anchor="middle" class="t" font-weight="bold">Join</text><text x="380" y="164" text-anchor="middle" class="t">exploding ? cartésien ?</text>
+  <rect x="150" y="200" width="200" height="60" rx="6" class="n" fill="#fff7d6" stroke="#e0a800"/><text x="250" y="224" text-anchor="middle" class="t" font-weight="bold">TableScan A</text><text x="250" y="244" text-anchor="middle" class="t">partitions scanned 100% ?</text>
+  <rect x="410" y="200" width="200" height="60" rx="6" class="n"/><text x="510" y="224" text-anchor="middle" class="t" font-weight="bold">TableScan B</text><text x="510" y="244" text-anchor="middle" class="t">bytes spilled ?</text>
+
+  <line x1="380" y1="125" x2="380" y2="103" stroke="#555" stroke-width="2" marker-end="url(#ap)"/>
+  <line x1="250" y1="200" x2="350" y2="172" stroke="#555" stroke-width="2" marker-end="url(#ap)"/>
+  <line x1="510" y1="200" x2="410" y2="172" stroke="#555" stroke-width="2" marker-end="url(#ap)"/>
+
+  <rect x="40" y="285" width="680" height="48" rx="6" fill="#f0f0f0" stroke="#9e9e9e"/>
+  <text x="55" y="306" class="t" font-weight="bold">Signaux à repérer :</text>
+  <text x="55" y="324" class="t">Spilling to local/remote disk → warehouse trop petit · Partitions scanned 100% → pruning absent (clustering) · Exploding join → condition manquante · Queued → multi-cluster</text>
+</svg>

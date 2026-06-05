@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" font-family="Segoe UI, Arial, sans-serif">
+  <style>.t{font-size:12px;fill:#33536e}.b{font-size:15px;fill:#0b3d66;font-weight:bold}.box{stroke:#1565c0;stroke-width:1.5}</style>
+  <text x="380" y="26" text-anchor="middle" class="b" font-size="17">Snowpark — exécution pushdown (lazy)</text>
+  <defs><marker id="aw" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#555"/></marker></defs>
+
+  <rect x="40" y="60" width="300" height="220" rx="8" fill="#eef6ff" class="box" stroke-dasharray="5 4"/>
+  <text x="190" y="84" text-anchor="middle" class="b" font-size="14">CÔTÉ CLIENT</text>
+  <rect x="70" y="100" width="240" height="40" rx="6" fill="#fff" class="box"/><text x="190" y="125" text-anchor="middle" class="t">df = session.table("ventes")</text>
+  <rect x="70" y="150" width="240" height="40" rx="6" fill="#fff" class="box"/><text x="190" y="175" text-anchor="middle" class="t">.filter(...).group_by(...).agg(...)</text>
+  <text x="190" y="214" text-anchor="middle" class="t" font-style="italic">Transformations = lazy</text>
+  <text x="190" y="232" text-anchor="middle" class="t">→ construit un plan logique, rien ne s'exécute</text>
+  <rect x="70" y="244" width="240" height="30" rx="6" fill="#ffe0e0" stroke="#c62828"/><text x="190" y="264" text-anchor="middle" class="t">Action: .show() / .collect() / .save_as_table()</text>
+
+  <rect x="420" y="60" width="300" height="220" rx="8" fill="#e3f2fd" class="box"/>
+  <text x="570" y="84" text-anchor="middle" class="b" font-size="14">CÔTÉ SERVEUR (Snowflake)</text>
+  <rect x="450" y="105" width="240" height="40" rx="6" fill="#fff" class="box"/><text x="570" y="130" text-anchor="middle" class="t">Plan traduit en SQL</text>
+  <rect x="450" y="160" width="240" height="40" rx="6" fill="#fff" class="box"/><text x="570" y="185" text-anchor="middle" class="t">Optimiseur Snowflake</text>
+  <rect x="450" y="215" width="240" height="45" rx="6" fill="#c8f7d4" stroke="#2e7d32"/><text x="570" y="237" text-anchor="middle" class="t" font-weight="bold">Exécution dans le Virtual Warehouse</text><text x="570" y="253" text-anchor="middle" class="t">données jamais transférées au client</text>
+
+  <line x1="340" y1="260" x2="448" y2="235" stroke="#c62828" stroke-width="2.5" marker-end="url(#aw)"/>
+  <text x="380" y="300" text-anchor="middle" class="t" font-weight="bold">L'action déclenche le pushdown : le calcul descend vers les données.</text>
+</svg>

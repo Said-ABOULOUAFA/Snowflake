@@ -1,59 +1,47 @@
-# Cheat Sheet COF-C03 — SnowPro Core
+# 🎯 Cheat Sheet — COF-C03 (SnowPro Core)
 
-## Architecture (31%)
+> 100 questions · 115 min · score 750/1000 · 175 $ · validité 2 ans
 
-| Élément | À retenir |
+## Poids des domaines
+| Domaine | % |
 |---|---|
-| 3 couches | Storage / Compute (Warehouses) / Cloud Services |
-| Cloud | AWS, Azure, GCP uniquement — pas d'on-premise |
-| Micro-partitions | 50-500 MB, colonnaire, min/max automatiques |
-| Pruning | Filtre sans fonction sur colonne = pruning actif |
-| Standard | Time Travel 1j max |
-| **Enterprise+** | Time Travel 90j, Multi-cluster, DDM, RAP |
-| **Business Critical** | Tri-secret key, HIPAA, PrivateLink |
+| 1.0 AI Data Cloud & Architecture | 31 |
+| 2.0 Account Management & Governance | 20 |
+| 3.0 Data Loading/Unloading & Connectivity | 18 |
+| 4.0 Performance, Querying & Transformation | 21 |
+| 5.0 Data Collaboration | 10 |
 
-## Sécurité RBAC (20%)
+## Architecture
+- 3 couches : **Stockage** / **Compute (warehouses MPP)** / **Cloud Services**.
+- Hybride : disque partagé (stockage central) **+** sans partage (compute MPP).
+- 100 % cloud (AWS/Azure/GCP), **pas d'on-premise**.
+- Warehouses **totalement indépendants** entre eux.
 
-| Rôle | Pouvoir |
-|---|---|
-| ACCOUNTADMIN | Tout |
-| SYSADMIN | Warehouses, bases, schémas, tables |
-| SECURITYADMIN | Rôles, utilisateurs, GRANTs |
-| USERADMIN | Créer users et rôles |
-| PUBLIC | Tous les utilisateurs |
+## Objets & éditions
+- Hiérarchie : Organisation → Compte → Base → Schéma → Objets.
+- Éditions : Standard / Enterprise (Time Travel 90 j, MV) / Business Critical (HIPAA, PrivateLink) / VPS.
 
-```
-DAC = propriétaire peut accorder accès à ses objets
-RBAC = droits via rôles hiérarchiques
-```
-
-## Cache (21%)
-
-| Cache | Durée | Perdu si | Crédits |
-|---|---|---|---|
-| Metadata | Permanent | Jamais | Aucun |
-| Result | 24h | Données changent | Aucun |
-| Warehouse | Vie du WH | Warehouse suspendu | Normaux |
-
-## Ingestion (18%)
-
-| Méthode | Warehouse | Latence |
+## Tables & stockage
+| Type | Time Travel | Fail-safe |
 |---|---|---|
-| COPY INTO | Ton warehouse | Minutes |
-| Snowpipe | **Serverless** | Secondes |
-| Snowpipe Streaming | **Serverless** | < 1s |
+| PERMANENT | 0–90 j | 7 j |
+| TRANSIENT | 0–1 j | aucun |
+| TEMPORARY | 0–1 j (session) | aucun |
+- Micro-partitions auto (~50–500 Mo), colonnaire, métadonnées min/max → **pruning**.
 
-## Pièges fréquents
+## Caching (3 niveaux) ⭐
+1. **Result cache** (Cloud Services, 24 h, exact même requête).
+2. **Local disk / warehouse cache** (données lues).
+3. **Metadata cache**.
 
-```
-❗ Tasks désactivées par défaut → ALTER TASK ... RESUME
-❗ Fail-safe 7j → Support Snowflake UNIQUEMENT
-❗ Time Travel ≠ Fail-safe
-❗ Resource Monitors = ZERO crédit supplémentaire
-❗ Trust Center = évaluer sécurité du compte (pas ACCOUNT_USAGE)
-❗ DAC ≠ RBAC (DAC = propriétaire, RBAC = rôles)
-❗ Vue sécurisée = obligatoire pour les Shares
-❗ Clone = GRANTs source NON copiés sur le clone
-❗ UPDATE Stream = 1 DELETE + 1 INSERT
-❗ SYSTEM$STREAM_HAS_DATA avant d'exécuter une Task
-```
+## Chargement
+- **COPY INTO** = batch (ton warehouse). **Snowpipe** = continu, serverless.
+- `VALIDATION_MODE`, `ON_ERROR`, `FILE FORMAT`, `PURGE`.
+
+## Sécurité (RBAC)
+- Rôles système : ORGADMIN, ACCOUNTADMIN, SECURITYADMIN, USERADMIN, SYSADMIN, PUBLIC.
+- Privilèges hérités via hiérarchie de rôles ; **clé : un clone n'hérite PAS des privilèges**.
+
+## Collaboration
+- **Secure Data Sharing** : pas de copie, partage des métadonnées (même région/cloud sinon réplication).
+- **Marketplace** & **Listings**, **Reader Accounts** pour non-clients.
